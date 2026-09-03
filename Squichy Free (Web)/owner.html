@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Free Bug Bot</title>
+<style>
+:root{
+  --bg:#060911; --bg2:#0a0f1c; --card:#0e1626; --card2:#111b30;
+  --border:rgba(140,180,255,.14); --border2:rgba(140,180,255,.28);
+  --text:#eef3fb; --muted:#7d93b8;
+  --accent:#2f7cff; --accent2:#7db8ff; --accent-deep:#0d3a99;
+  --green:#33d488;
+  --fh:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{
+  font-family:var(--fh);
+  background:var(--bg);
+  color:var(--text);
+  min-height:100vh;
+  position:relative;
+  overflow-x:hidden;
+}
+.wrap{
+  max-width:520px;
+  margin:0 auto;
+  padding:0 16px 60px;
+  position:relative;
+  z-index:1;
+}
+.hero{
+  position:relative;
+  height:230px;
+  margin:0 -16px 20px;
+  overflow:hidden;
+}
+.hero img{
+  width:100%;
+  height:100%;
+  object-fit:cover;
+  object-position:center 20%;
+  filter:saturate(1.05);
+}
+.hero::after{
+  content:'';
+  position:absolute;
+  inset:0;
+  background:linear-gradient(180deg,rgba(6,9,17,.15) 0%,rgba(6,9,17,.55) 55%,var(--bg) 100%);
+}
+.hero-text{
+  position:absolute;
+  left:20px;
+  right:20px;
+  bottom:16px;
+  z-index:1;
+}
+.hero-text .name{
+  font-size:1.7rem;
+  font-weight:700;
+  letter-spacing:.01em;
+  line-height:1;
+  text-shadow:0 2px 16px rgba(0,0,0,.5);
+}
+.hero-text .tag{
+  font-size:.74rem;
+  color:var(--accent2);
+  letter-spacing:.1em;
+  text-transform:uppercase;
+  margin-top:5px;
+  font-weight:600;
+}
+.card{
+  position:relative;
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:18px;
+  padding:22px;
+  margin-bottom:16px;
+}
+input[type=text],input[type=password]{
+  width:100%;
+  background:var(--bg2);
+  border:1px solid var(--border);
+  border-radius:12px;
+  color:var(--text);
+  padding:14px 15px;
+  font-size:.9rem;
+  outline:none;
+  margin-bottom:14px;
+  font-family:var(--fh);
+  transition:border-color .15s;
+}
+input[type=text]:focus,input[type=password]:focus{
+  border-color:var(--accent2);
+}
+input::placeholder{
+  color:var(--muted);
+}
+.btn{
+  width:100%;
+  background:linear-gradient(135deg,var(--accent),var(--accent-deep));
+  color:#fff;
+  border:none;
+  border-radius:12px;
+  padding:15px;
+  font-weight:700;
+  font-size:.9rem;
+  cursor:pointer;
+}
+.btn:disabled{
+  opacity:.55;
+  cursor:not-allowed;
+}
+.stats-row{
+  display:flex;
+  gap:10px;
+  margin-bottom:16px;
+}
+.stat-box{
+  flex:1;
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:14px;
+  padding:16px;
+  text-align:center;
+}
+.stat-box .n{
+  font-size:1.6rem;
+  font-weight:800;
+  color:var(--accent2);
+}
+.stat-box .l{
+  font-size:.62rem;
+  color:var(--muted);
+  text-transform:uppercase;
+  letter-spacing:.08em;
+  margin-top:4px;
+}
+.section-title{
+  font-size:.68rem;
+  color:var(--muted);
+  text-transform:uppercase;
+  letter-spacing:.1em;
+  margin-bottom:14px;
+  display:block;
+  font-weight:600;
+}
+.paired-row{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  background:rgba(255,255,255,.025);
+  border:1px solid var(--border);
+  border-radius:12px;
+  padding:13px 15px;
+  margin-bottom:8px;
+}
+.paired-num{
+  font-weight:600;
+  display:flex;
+  align-items:center;
+  gap:9px;
+}
+.status-dot{
+  width:8px;
+  height:8px;
+  border-radius:50%;
+  flex-shrink:0;
+}
+.icon-btn{
+  background:none;
+  border:1px solid var(--accent2);
+  color:var(--accent2);
+  border-radius:9px;
+  width:34px;
+  height:34px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  cursor:pointer;
+  flex-shrink:0;
+}
+.empty{
+  text-align:center;
+  color:var(--muted);
+  font-size:.85rem;
+  padding:30px 0;
+}
+.toast{
+  position:fixed;
+  bottom:24px;
+  left:50%;
+  transform:translateX(-50%);
+  background:var(--card2);
+  border:1px solid var(--border2);
+  color:var(--text);
+  padding:12px 20px;
+  border-radius:12px;
+  font-size:.82rem;
+  z-index:9999;
+  display:none;
+  max-width:90%;
+  text-align:center;
+  box-shadow:0 10px 30px rgba(0,0,0,.4);
+}
+.confirm-box{
+  display:none;
+  text-align:center;
+  background:var(--card2);
+  border:1px solid var(--border);
+  border-radius:12px;
+  padding:12px;
+  margin:-2px 0 10px;
+}
+.confirm-box p{
+  font-size:.78rem;
+  color:var(--muted);
+  margin-bottom:10px;
+}
+.confirm-box button{
+  border-radius:9px;
+  padding:9px 16px;
+  font-size:.78rem;
+  font-weight:600;
+  cursor:pointer;
+  margin-right:8px;
+}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+
+  <div class="hero">
+    <img src="https://files.catbox.moe/rg113k.jpg" alt="Free Bug Bot">
+    <div class="hero-text">
+      <div class="name">FREE BUG BOT</div>
+      <div class="tag">Multi Device WhatsApp Bot</div>
+    </div>
+  </div>
+
+  <div class="card" id="login-card">
+    <input type="password" id="owner-code-input" placeholder="Owner code" autocomplete="off">
+    <button class="btn" id="login-btn" onclick="ownerLogin()">Unlock</button>
+  </div>
+
+  <div id="owner-panel" style="display:none;">
+
+    <div class="stats-row">
+      <div class="stat-box">
+        <div class="n" id="stat-connected">—</div>
+        <div class="l">Connected</div>
+      </div>
+      <div class="stat-box">
+        <div class="n" id="stat-total">—</div>
+        <div class="l">Total Numbers</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <span class="section-title">Connected numbers</span>
+      <div id="owner-list">
+        <div class="empty">Loading...</div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const STATUS_STYLES = {
+  connected:{color:'#33d488',label:'Connected'},
+  connecting:{color:'#ffce54',label:'Pairing'},
+  disconnected:{color:'#6b7f9e',label:'Disconnected'}
+};
+
+function toast(msg){
+  const el=document.getElementById('toast');
+  el.textContent=msg;
+  el.style.display='block';
+  clearTimeout(el._t);
+  el._t=setTimeout(()=>{el.style.display='none';},3000);
+}
+
+function getOwnerToken(){
+  return sessionStorage.getItem('sqxOwnerToken');
+}
+
+async function api(url,method,body,auth){
+  try{
+    const opts={method:method||'GET',headers:{}};
+
+    if(body){
+      opts.headers['Content-Type']='application/json';
+      opts.body=JSON.stringify(body);
+    }
+
+    if(auth){
+      opts.headers['Authorization']='Bearer '+getOwnerToken();
+    }
+
+    const r=await fetch(url,opts);
+    return await r.json();
+  }catch(e){
+    return null;
+  }
+}
+
+async function ownerLogin(){
+  const code=document.getElementById('owner-code-input').value;
+
+  if(!code)return;
+
+  const btn=document.getElementById('login-btn');
+
+  btn.disabled=true;
+  btn.textContent='Checking...';
+
+  const r=await api('/api/owner/verify','POST',{code});
+
+  btn.disabled=false;
+  btn.textContent='Unlock';
+
+  if(!r||!r.token){
+    toast('Invalid code');
+    return;
+  }
+
+  sessionStorage.setItem('sqxOwnerToken',r.token);
+
+  document.getElementById('login-card').style.display='none';
+  document.getElementById('owner-panel').style.display='block';
+
+  loadOwnerSessions();
+}
+
+function ownerSessionExpired(){
+  toast('Session expired, log in again');
+
+  sessionStorage.removeItem('sqxOwnerToken');
+
+  document.getElementById('login-card').style.display='block';
+  document.getElementById('owner-panel').style.display='none';
+}
+
+async function loadOwnerSessions(){
+  const el=document.getElementById('owner-list');
+
+  const r=await api('/api/owner/sessions','GET',null,true);
+
+  if(!r||r.error){
+    ownerSessionExpired();
+    return;
+  }
+
+  const numbers=r.numbers||[];
+
+  document.getElementById('stat-total').textContent=numbers.length;
+
+  document.getElementById('stat-connected').textContent=
+    numbers.filter(n=>n.status==='connected').length;
+
+  if(numbers.length===0){
+    el.innerHTML='<div class="empty">No paired numbers right now.</div>';
+    return;
+  }
+
+  el.innerHTML=numbers.map(n=>{
+    const st=STATUS_STYLES[n.status]||STATUS_STYLES.disconnected;
+
+    return `
+      <div class="paired-row" id="owner-row-${n.numero}">
+        <span class="paired-num">
+          <span class="status-dot" style="background:${st.color};box-shadow:0 0 6px ${st.color};"></span>
+          +${n.numero}
+        </span>
+
+        <button class="icon-btn" onclick="askOwnerDisconnect('${n.numero}')" title="Disconnect">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3">
+            <path d="M18.36 6.64a9 9 0 1 1-12.73 0"/>
+            <line x1="12" y1="2" x2="12" y2="12"/>
+          </svg>
+        </button>
+      </div>
+
+      <div class="confirm-box" id="owner-confirm-${n.numero}">
+        <p>Disconnect +${n.numero}?</p>
+
+        <button onclick="ownerDisconnect('${n.numero}')" style="background:var(--accent2);color:#071224;border:none;">
+          Yes, disconnect
+        </button>
+
+        <button onclick="document.getElementById('owner-confirm-${n.numero}').style.display='none'" style="background:transparent;border:1px solid var(--border2);color:var(--text);">
+          Cancel
+        </button>
+      </div>
+    `;
+  }).join('');
+}
+
+function askOwnerDisconnect(number){
+  document.getElementById(`owner-confirm-${number}`).style.display='block';
+}
+
+async function ownerDisconnect(number){
+  const c=document.getElementById(`owner-confirm-${number}`);
+
+  if(c)c.style.display='none';
+
+  const r=await api('/api/owner/disconnect','POST',{number},true);
+
+  if(!r||!r.success){
+    toast('Failed to disconnect');
+    return;
+  }
+
+  toast('Number disconnected');
+  loadOwnerSessions();
+}
+
+document.getElementById('owner-code-input').addEventListener('keydown',e=>{
+  if(e.key==='Enter')ownerLogin();
+});
+
+if(getOwnerToken()){
+  document.getElementById('login-card').style.display='none';
+  document.getElementById('owner-panel').style.display='block';
+  loadOwnerSessions();
+}
+</script>
+</body>
+</html>

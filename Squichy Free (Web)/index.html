@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Free Bug Bot</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#060911; --bg2:#0a0f1c; --card:#0e1626; --card2:#111b30;
+  --line:rgba(140,180,255,.14); --line2:rgba(140,180,255,.28);
+  --text:#eef3fb; --muted:#7d93b8;
+  --accent:#2f7cff; --accent2:#7db8ff; --accent-deep:#0d3a99;
+  --green:#33d488; --amber:#ffce54;
+  --fd:'Space Grotesk',sans-serif; --fh:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:var(--fh);background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden;}
+.wrap{max-width:480px;margin:0 auto;padding:0 16px 100px;}
+
+.topnav{position:sticky;top:0;z-index:500;display:flex;align-items:center;gap:10px;padding:14px 16px;background:rgba(6,9,17,.72);backdrop-filter:blur(14px);border-bottom:1px solid var(--line);}
+.menu-burger{background:transparent;border:none;color:var(--text);cursor:pointer;padding:7px;border-radius:9px;display:flex;align-items:center;justify-content:center;transition:background .15s;}
+.menu-burger:hover{background:rgba(255,255,255,.07);}
+.topnav-title{font-family:var(--fh);font-weight:700;font-size:.95rem;letter-spacing:.02em;color:var(--text);}
+.sq-menu-dropdown{position:absolute;top:52px;left:12px;background:var(--card2);border:1px solid var(--line2);border-radius:14px;padding:6px;min-width:210px;box-shadow:0 16px 40px rgba(0,0,0,.55);display:none;flex-direction:column;z-index:600;}
+.sq-menu-dropdown.show{display:flex;}
+.sq-menu-dropdown button{display:flex;align-items:center;gap:10px;background:transparent;border:none;color:var(--text);padding:11px 12px;font-size:.85rem;font-weight:500;cursor:pointer;border-radius:9px;text-align:left;width:100%;}
+.sq-menu-dropdown button:hover{background:rgba(255,255,255,.06);}
+
+.hero{position:relative;height:230px;margin:0 -16px 0;overflow:hidden;}
+.hero img{width:100%;height:100%;object-fit:cover;object-position:center 20%;filter:saturate(1.05);}
+.hero::after{content:'';position:absolute;inset:0;background:linear-gradient(180deg,rgba(6,9,17,.15) 0%,rgba(6,9,17,.55) 55%,var(--bg) 100%);}
+.hero-text{position:absolute;left:20px;right:20px;bottom:16px;z-index:1;}
+.hero-text .name{font-family:var(--fh);font-size:1.7rem;font-weight:700;letter-spacing:.01em;line-height:1;text-shadow:0 2px 16px rgba(0,0,0,.5);}
+.hero-text .tag{font-size:.74rem;color:var(--accent2);letter-spacing:.1em;text-transform:uppercase;margin-top:5px;font-weight:600;}
+
+.wrap-inner{padding-top:16px;}
+
+.header{display:flex;align-items:center;justify-content:center;margin:2px 0 18px;}
+.stat-pill{display:flex;align-items:center;gap:8px;background:var(--card);border:1px solid var(--line);border-radius:99px;padding:9px 18px;cursor:pointer;font-size:.83rem;font-weight:500;color:var(--text);transition:border-color .15s,background .15s;}
+.stat-pill:hover{border-color:var(--line2);background:var(--card2);}
+.pulse-dot{width:7px;height:7px;border-radius:50%;background:var(--green);box-shadow:0 0 0 0 rgba(51,212,136,.6);animation:pulse 2s infinite;flex-shrink:0;}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(51,212,136,.55);}70%{box-shadow:0 0 0 7px rgba(51,212,136,0);}100%{box-shadow:0 0 0 0 rgba(51,212,136,0);}}
+
+.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:22px;margin-bottom:14px;}
+.card-label{font-size:.68rem;color:var(--muted);text-transform:uppercase;letter-spacing:.11em;margin-bottom:12px;display:block;font-weight:600;}
+
+.country-picker{margin-bottom:14px;}
+.country-trigger{width:100%;background:var(--bg2);border:1px solid var(--line);border-radius:12px;color:var(--text);padding:14px 15px;font-size:.88rem;font-family:var(--fh);display:flex;align-items:center;justify-content:space-between;cursor:pointer;transition:border-color .15s;}
+.country-trigger:hover{border-color:var(--accent2);}
+.country-trigger svg{color:var(--muted);flex-shrink:0;}
+.top-overlay{align-items:flex-start!important;padding-top:0;}
+.top-panel{border-radius:0 0 22px 22px!important;max-height:85vh;}
+.country-search-input{width:100%;background:var(--bg2);border:1px solid var(--line);border-radius:12px;color:var(--text);padding:12px 14px;font-size:.88rem;font-family:var(--fh);outline:none;margin-bottom:12px;}
+.country-search-input:focus{border-color:var(--accent2);}
+.country-search-input::placeholder{color:var(--muted);}
+.country-list{max-height:220px;overflow-y:auto;}
+.country-list::-webkit-scrollbar{width:4px;}
+.country-list::-webkit-scrollbar-thumb{background:var(--line2);border-radius:99px;}
+.country-option{display:flex;align-items:center;gap:10px;padding:11px 12px;cursor:pointer;font-size:.85rem;border-radius:10px;transition:background .12s;}
+.country-option:hover{background:rgba(47,124,255,.1);}
+.country-option .flag{font-size:1.1rem;flex-shrink:0;}
+.country-option .cname{flex:1;}
+.country-option .ccode{font-family:monospace;font-size:.72rem;color:var(--accent2);flex-shrink:0;}
+
+.phone-row{display:flex;gap:8px;margin-bottom:18px;}
+.prefix-wrap{position:relative;flex-shrink:0;}
+.prefix-box{background:rgba(47,124,255,.09);border:1px solid rgba(47,124,255,.3);border-radius:12px;padding:14px;color:var(--accent2);font-family:monospace;font-weight:700;font-size:.9rem;white-space:nowrap;display:flex;align-items:center;justify-content:center;min-width:64px;text-align:center;cursor:text;}
+.prefix-input{position:absolute;inset:0;background:transparent;border:none;outline:none;color:var(--accent2);font-family:monospace;font-weight:700;font-size:.9rem;text-align:center;width:100%;padding:0 8px;}
+input[type=text]{flex:1;background:var(--bg2);border:1px solid var(--line);border-radius:12px;color:var(--text);padding:14px 15px;font-size:.9rem;font-family:var(--fh);outline:none;transition:border-color .15s;}
+input[type=text]:focus{border-color:var(--accent2);}
+
+.btn{width:100%;background:linear-gradient(135deg,var(--accent),var(--accent-deep));color:#fff;border:none;border-radius:12px;padding:15px;font-weight:600;font-size:.9rem;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;box-shadow:0 6px 20px rgba(47,124,255,.28);transition:transform .1s,box-shadow .15s;}
+.btn:active{transform:scale(.985);}
+.btn:disabled{opacity:.55;cursor:not-allowed;box-shadow:none;}
+.btn-ghost{background:var(--card2);border:1px solid var(--line);color:var(--text);box-shadow:none;}
+.btn-ghost:hover{border-color:var(--line2);}
+.spin{width:15px;height:15px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:sp .7s linear infinite;}
+@keyframes sp{to{transform:rotate(360deg);}}
+.code-box{text-align:center;padding:24px 0;}
+.code-box .code{font-family:var(--fh);font-size:2.1rem;font-weight:700;letter-spacing:.14em;color:var(--accent2);margin-bottom:10px;}
+.code-box .hint{font-size:.78rem;color:var(--muted);line-height:1.5;}
+.hint-text{font-size:.78rem;color:var(--muted);margin-bottom:14px;line-height:1.5;}
+
+.modal-overlay{display:none;position:fixed;inset:0;z-index:9000;background:rgba(4,6,11,.72);backdrop-filter:blur(3px);align-items:flex-end;justify-content:center;}
+.modal-overlay.show{display:flex;}
+.modal-panel{background:var(--card2);border:1px solid var(--line);border-radius:22px 22px 0 0;width:100%;max-width:480px;max-height:82vh;overflow-y:auto;padding:22px;}
+.modal-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;}
+.modal-title{font-family:var(--fh);font-size:1.1rem;font-weight:700;}
+.modal-close{background:rgba(255,255,255,.07);border:none;color:var(--text);width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;}
+.paired-row{display:flex;align-items:center;justify-content:space-between;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:13px 15px;margin-bottom:8px;}
+.paired-num{font-weight:600;display:flex;align-items:center;gap:9px;}
+.status-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.disconnect-btn{background:none;border:1px solid var(--accent2);color:var(--accent2);border-radius:9px;width:34px;height:34px;display:flex;align-items:center;justify-content:center;cursor:pointer;}
+.empty{text-align:center;color:var(--muted);font-size:.85rem;padding:32px 0;}
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--card2);border:1px solid var(--line2);color:var(--text);padding:12px 20px;border-radius:12px;font-size:.82rem;z-index:9999;display:none;max-width:90%;text-align:center;box-shadow:0 10px 30px rgba(0,0,0,.4);}
+.action-popup-overlay{display:none;position:fixed;inset:0;z-index:9500;background:rgba(4,6,11,.6);align-items:center;justify-content:center;}
+.action-popup-overlay.show{display:flex;}
+.action-popup{background:var(--card2);border:1px solid var(--line);border-radius:18px;padding:28px 32px;display:flex;flex-direction:column;align-items:center;gap:14px;min-width:180px;}
+.action-popup p{font-size:.85rem;font-weight:500;color:var(--text);}
+
+.maint-overlay{display:none;position:fixed;inset:0;z-index:20000;background:var(--bg);align-items:center;justify-content:center;padding:20px;}
+.maint-overlay.show{display:flex;}
+.maint-panel{background:var(--card);border:1px solid var(--line2);border-radius:18px;padding:30px 26px;max-width:340px;width:100%;text-align:center;}
+.maint-panel .icon{width:54px;height:54px;border-radius:14px;background:rgba(47,124,255,.1);border:1px solid var(--line2);display:flex;align-items:center;justify-content:center;margin:0 auto 16px;}
+.maint-panel h2{font-family:var(--fh);font-size:1.1rem;margin-bottom:8px;}
+.maint-panel p{font-size:.8rem;color:var(--muted);margin-bottom:18px;line-height:1.5;}
+.maint-panel input{width:100%;margin-bottom:12px;text-align:center;letter-spacing:.08em;}
+.maint-error{font-size:.75rem;color:var(--accent2);margin-top:-6px;margin-bottom:10px;display:none;}
+</style>
+</head>
+<body>
+
+<div class="maint-overlay" id="maint-overlay">
+  <div class="maint-panel">
+    <div class="icon">
+      <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="var(--accent2)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+    </div>
+    <h2>Site under maintenance</h2>
+    <p>Free Bug Bot is currently being fixed. Admin access only for now.</p>
+    <input type="password" id="maint-code-input" placeholder="Admin code" autocomplete="off"/>
+    <div class="maint-error" id="maint-error">Incorrect code.</div>
+    <button class="btn" onclick="maintUnlock()">Enter</button>
+  </div>
+</div>
+
+<nav class="topnav">
+  <button type="button" class="menu-burger" onclick="sqMenuToggle(event)" aria-label="Menu">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+  </button>
+  <div id="sq-menu-dropdown" class="sq-menu-dropdown">
+    <button type="button" onclick="sqMenuClose();openMyNumbersModal()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.362 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.338 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+      My Paired Number
+    </button>
+  </div>
+  <span class="topnav-title">Free Bug Bot</span>
+</nav>
+
+<div class="wrap">
+  <div class="hero">
+    <img src="https://files.catbox.moe/rg113k.jpg" alt="Free Bug Bot"/>
+    <div class="hero-text">
+      <div class="name">FREE BUG BOT</div>
+      <div class="tag">Multi Device WhatsApp Bot</div>
+    </div>
+  </div>
+
+  <div class="wrap-inner">
+    <div class="header">
+      <div class="stat-pill" onclick="openAllPairedModal()">
+        <span class="pulse-dot"></span>
+        <span id="online-count">—</span> connected
+      </div>
+    </div>
+
+    <div class="card" id="pair-setup">
+      <span class="card-label">Pair your WhatsApp number</span>
+
+      <span class="card-label">Country</span>
+      <div class="country-picker">
+        <button type="button" class="country-trigger" id="country-trigger" onclick="openCountryModal()">
+          <span id="country-display">— Select country —</span>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+        </button>
+      </div>
+
+      <span class="card-label">WhatsApp Number</span>
+      <div class="phone-row">
+        <div class="prefix-wrap">
+          <div class="prefix-box" id="prefix-display">+</div>
+          <input class="prefix-input" type="text" id="prefix-input" value="" placeholder="+" oninput="onPrefixInput(this.value)" maxlength="5"/>
+        </div>
+        <input type="text" id="num-input" placeholder="xxxx" inputmode="numeric" maxlength="15"/>
+      </div>
+
+      <button class="btn" id="pair-btn" onclick="doPair()">Connect WhatsApp</button>
+    </div>
+
+    <div class="card" id="pair-status" style="display:none;">
+      <span class="card-label" id="pair-status-label">Checking Server</span>
+      <div class="code-box" id="pair-status-body">
+        <div class="spin" style="width:26px;height:26px;border-width:3px;margin:0 auto 14px;"></div>
+      </div>
+      <button class="btn btn-ghost" onclick="askCancelPair()">Cancel</button>
+      <div id="cancel-confirm-wrap" style="display:none;text-align:center;margin-top:10px;">
+        <p style="font-size:.78rem;color:var(--muted);margin-bottom:10px;">Cancel this pairing request?</p>
+        <button onclick="resetPairForm()" style="background:var(--accent2);color:#071224;border:none;border-radius:9px;padding:9px 16px;font-size:.78rem;font-weight:600;cursor:pointer;margin-right:8px;">Yes, cancel</button>
+        <button onclick="document.getElementById('cancel-confirm-wrap').style.display='none'" style="background:transparent;border:1px solid var(--line2);color:var(--text);border-radius:9px;padding:9px 16px;font-size:.78rem;cursor:pointer;">Keep waiting</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div class="modal-overlay top-overlay" id="country-modal-overlay" onclick="if(event.target===this) closeCountryModal()">
+  <div class="modal-panel top-panel">
+    <div class="modal-head">
+      <div class="modal-title">Select country</div>
+      <button class="modal-close" onclick="closeCountryModal()">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <input class="country-search-input" type="text" placeholder="Search country..." id="country-search" oninput="filterCountries(this.value)" autocomplete="off"/>
+    <div class="country-list" id="country-list"></div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="my-numbers-overlay" onclick="if(event.target===this) closeMyNumbersModal()">
+  <div class="modal-panel">
+    <div class="modal-head">
+      <div class="modal-title">My Paired Numbers</div>
+      <button class="modal-close" onclick="closeMyNumbersModal()">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div id="my-numbers-list"><div class="empty">Loading...</div></div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="all-paired-overlay" onclick="if(event.target===this) closeAllPairedModal()">
+  <div class="modal-panel">
+    <div class="modal-head">
+      <div class="modal-title">Connected Numbers</div>
+      <button class="modal-close" onclick="closeAllPairedModal()">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div id="all-paired-list"><div class="empty">Loading...</div></div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="no-server-overlay" onclick="if(event.target===this) closeNoServerModal()">
+  <div class="modal-panel" style="text-align:center;padding:32px 24px;">
+    <div style="width:62px;height:62px;margin:0 auto 18px;border-radius:16px;background:rgba(47,124,255,.09);border:1px solid rgba(47,124,255,.3);display:flex;align-items:center;justify-content:center;">
+      <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="var(--accent2)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+    </div>
+    <div class="modal-title" style="margin-bottom:8px;">No Server Available</div>
+    <p style="font-size:.82rem;color:var(--muted);margin-bottom:22px;line-height:1.6;">All servers are currently full. Please contact the owner for help.</p>
+    <button class="btn btn-ghost" onclick="closeNoServerModal()">Close</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<div class="action-popup-overlay" id="action-popup-overlay">
+  <div class="action-popup">
+    <div class="spin" style="width:24px;height:24px;border-width:3px;"></div>
+    <p id="action-popup-text">Disconnecting...</p>
+  </div>
+</div>
+
+<script>
+const MAINTENANCE_MODE = false;
+const MAINTENANCE_CODE = 'aliandro';
+const MAINTENANCE_SESSION_KEY = 'sqxMaintUnlocked';
+
+(function initMaintenanceGate() {
+  if (!MAINTENANCE_MODE) return;
+  if (sessionStorage.getItem(MAINTENANCE_SESSION_KEY) === '1') return;
+  document.documentElement.style.overflow = 'hidden';
+  document.getElementById('maint-overlay').classList.add('show');
+})();
+
+function maintUnlock() {
+  const input = document.getElementById('maint-code-input');
+  const err = document.getElementById('maint-error');
+  if (input.value.trim() === MAINTENANCE_CODE) {
+    sessionStorage.setItem(MAINTENANCE_SESSION_KEY, '1');
+    document.getElementById('maint-overlay').classList.remove('show');
+    document.documentElement.style.overflow = '';
+  } else {
+    err.style.display = 'block';
+    input.value = '';
+  }
+}
+document.addEventListener('DOMContentLoaded', () => {
+  const input = document.getElementById('maint-code-input');
+  if (input) input.addEventListener('keydown', e => { if (e.key === 'Enter') maintUnlock(); });
+});
+
+let countries = [];
+let selectedCountry = null;
+
+async function loadCountries() {
+  try {
+    const r = await fetch('/countries.json');
+    countries = await r.json();
+    renderCountryList(countries);
+  } catch (e) {}
+}
+
+function renderCountryList(list) {
+  const el = document.getElementById('country-list');
+  el.innerHTML = list.map(c => `
+    <div class="country-option" onclick="selectCountry('${c.code}','${c.name.replace(/'/g, "\\'")}','${c.flag}')">
+      <span class="flag">${c.flag}</span>
+      <span class="cname">${c.name}</span>
+      <span class="ccode">${c.code}</span>
+    </div>
+  `).join('');
+}
+
+function filterCountries(q) {
+  const filtered = q
+    ? countries.filter(c => c.name.toLowerCase().includes(q.toLowerCase()) || c.code.includes(q))
+    : countries;
+  renderCountryList(filtered);
+}
+
+function openCountryModal() {
+  document.getElementById('country-modal-overlay').classList.add('show');
+  document.getElementById('country-search').value = '';
+  renderCountryList(countries);
+  setTimeout(() => document.getElementById('country-search').focus(), 100);
+}
+
+function closeCountryModal() {
+  document.getElementById('country-modal-overlay').classList.remove('show');
+}
+
+function selectCountry(code, name, flag) {
+  selectedCountry = { code, name, flag };
+  document.getElementById('country-display').textContent = `${flag} ${name} (${code})`;
+  document.getElementById('prefix-display').textContent = code;
+  document.getElementById('prefix-input').value = code;
+  closeCountryModal();
+  document.getElementById('num-input').focus();
+}
+
+function onPrefixInput(val) {
+  let v = val.replace(/[^0-9+]/g, '');
+  if (v && !v.startsWith('+')) v = '+' + v;
+  document.getElementById('prefix-input').value = v;
+  document.getElementById('prefix-display').textContent = v || '+';
+
+  const code = v.trim();
+  if (code.length >= 2) {
+    const match = countries.find(c => c.code === code);
+    if (match) {
+      selectedCountry = match;
+      document.getElementById('country-display').textContent = `${match.flag} ${match.name} (${match.code})`;
+      document.getElementById('num-input').focus();
+    }
+  }
+}
+
+loadCountries();
+
+function showActionPopup(text) {
+  document.getElementById('action-popup-text').textContent = text;
+  document.getElementById('action-popup-overlay').classList.add('show');
+}
+function hideActionPopup() {
+  document.getElementById('action-popup-overlay').classList.remove('show');
+}
+
+function toast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.style.display = 'block';
+  clearTimeout(el._t);
+  el._t = setTimeout(() => { el.style.display = 'none'; }, 3000);
+}
+
+function maskNumero(numero) {
+  const clean = String(numero || '').replace(/[^0-9]/g, '');
+  if (clean.length <= 8) return clean;
+  return clean.slice(0, 5) + '****' + clean.slice(-2);
+}
+
+const STATUS_STYLES = {
+  connected:    { color: '#33d488', label: 'Connected' },
+  connecting:   { color: '#ffce54', label: 'Pairing' },
+  disconnected: { color: '#6b7f9e', label: 'Disconnected' },
+};
+
+async function api(url, method, body) {
+  try {
+    const opts = { method: method || 'GET', headers: {} };
+    if (body) { opts.headers['Content-Type'] = 'application/json'; opts.body = JSON.stringify(body); }
+    const r = await fetch(url, opts);
+    return await r.json();
+  } catch (e) {
+    return null;
+  }
+}
+
+const MY_NUMBERS_KEY = 'sqxMyNumbers';
+function getMyNumbers() {
+  try { return JSON.parse(localStorage.getItem(MY_NUMBERS_KEY) || '[]'); } catch (e) { return []; }
+}
+function addMyNumber(numero) {
+  const list = getMyNumbers();
+  if (!list.includes(numero)) { list.push(numero); localStorage.setItem(MY_NUMBERS_KEY, JSON.stringify(list)); }
+}
+function removeMyNumber(numero) {
+  localStorage.setItem(MY_NUMBERS_KEY, JSON.stringify(getMyNumbers().filter(n => n !== numero)));
+}
+
+async function doPair() {
+  const prefix = (document.getElementById('prefix-input').value || '').replace(/[^0-9]/g, '');
+  const numInput = document.getElementById('num-input');
+  const numPart = numInput.value.replace(/[^0-9]/g, '');
+
+  if (!prefix) { toast('Select a country / dial code first'); return; }
+  if (numPart.length < 5) { toast('Enter a valid number'); return; }
+
+  const number = prefix + numPart;
+
+  document.getElementById('pair-setup').style.display = 'none';
+  const statusCard = document.getElementById('pair-status');
+  const label = document.getElementById('pair-status-label');
+  const body = document.getElementById('pair-status-body');
+  statusCard.style.display = 'block';
+
+  label.textContent = 'Checking Server';
+  body.innerHTML = `<div class="spin" style="width:26px;height:26px;border-width:3px;margin:0 auto 14px;"></div><div class="hint">Looking for an available server...</div>`;
+
+  label.textContent = 'Connecting';
+  body.innerHTML = `<div class="spin" style="width:26px;height:26px;border-width:3px;margin:0 auto 14px;"></div><div class="hint">Requesting your pairing code...</div>`;
+
+  const r = await api('/api/pair', 'POST', { number });
+
+  if (!r || !r.success) {
+    if (r?.error === 'no_server_available') {
+      document.getElementById('pair-setup').style.display = 'block';
+      document.getElementById('pair-status').style.display = 'none';
+      document.getElementById('no-server-overlay').classList.add('show');
+      return;
+    }
+    const msg = r?.error === 'already_connected' ? 'This number is already connected.'
+      : r?.error === 'server_full' ? 'This number is already connected.'
+      : 'Failed to generate a pairing code. Try again.';
+    label.textContent = 'Error';
+    body.innerHTML = `<div class="hint" style="color:var(--accent2);">${msg}</div>`;
+    return;
+  }
+
+  label.textContent = 'Your Pairing Code';
+  body.innerHTML = `
+    <div class="code" id="pair-code-text">${r.code}</div>
+    <button class="btn btn-ghost" style="margin-bottom:10px;" onclick="copyPairCode()">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>
+      Copy Code
+    </button>
+    <div class="hint">Open WhatsApp → Linked Devices → Link with phone number, then enter this code.</div>
+  `;
+  addMyNumber(number);
+  loadOnlineCount();
+}
+
+function closeNoServerModal() {
+  document.getElementById('no-server-overlay').classList.remove('show');
+}
+
+function copyPairCode() {
+  const code = document.getElementById('pair-code-text')?.textContent;
+  if (!code) return;
+  navigator.clipboard?.writeText(code).then(() => toast('Code copied')).catch(() => toast('Failed to copy'));
+}
+
+function askCancelPair() {
+  document.getElementById('cancel-confirm-wrap').style.display = 'block';
+}
+
+function resetPairForm() {
+  document.getElementById('cancel-confirm-wrap').style.display = 'none';
+  showActionPopup('Cancelling...');
+  setTimeout(() => {
+    document.getElementById('pair-setup').style.display = 'block';
+    document.getElementById('pair-status').style.display = 'none';
+    document.getElementById('num-input').value = '';
+    hideActionPopup();
+  }, 600);
+}
+
+function sqMenuToggle(e) {
+  e.stopPropagation();
+  const d = document.getElementById('sq-menu-dropdown');
+  d.classList.toggle('show');
+  if (d.classList.contains('show')) document.addEventListener('click', sqMenuOutsideClick);
+}
+function sqMenuClose() {
+  document.getElementById('sq-menu-dropdown').classList.remove('show');
+  document.removeEventListener('click', sqMenuOutsideClick);
+}
+function sqMenuOutsideClick(e) {
+  const d = document.getElementById('sq-menu-dropdown');
+  if (d && !d.contains(e.target) && !e.target.closest('.menu-burger')) sqMenuClose();
+}
+
+function openMyNumbersModal() {
+  document.getElementById('my-numbers-overlay').classList.add('show');
+  loadMyNumbers();
+}
+function closeMyNumbersModal() {
+  document.getElementById('my-numbers-overlay').classList.remove('show');
+}
+async function loadMyNumbers() {
+  const el = document.getElementById('my-numbers-list');
+  el.innerHTML = '<div class="empty">Loading...</div>';
+
+  const myNums = getMyNumbers();
+  if (myNums.length === 0) {
+    el.innerHTML = '<div class="empty">No paired numbers on this device yet.</div>';
+    return;
+  }
+
+  const r = await api('/api/my-numbers?numbers=' + myNums.join(','), 'GET');
+  const numbers = r?.numbers || myNums.map(numero => ({ numero, status: 'disconnected' }));
+
+  if (numbers.length === 0) {
+    el.innerHTML = '<div class="empty">No paired numbers found for your connection.</div>';
+    return;
+  }
+
+  el.innerHTML = numbers.map(n => {
+    const st = STATUS_STYLES[n.status] || STATUS_STYLES.disconnected;
+    return `
+      <div class="paired-row" id="paired-row-${n.numero}">
+        <span class="paired-num">
+          <span class="status-dot" style="background:${st.color};box-shadow:0 0 6px ${st.color};"></span>
+          +${n.numero}
+        </span>
+        <button class="disconnect-btn" onclick="askDisconnect('${n.numero}')" title="Disconnect">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3"><path d="M18.36 6.64a9 9 0 1 1-12.73 0"/><line x1="12" y1="2" x2="12" y2="12"/></svg>
+        </button>
+      </div>
+      <div id="confirm-${n.numero}" style="display:none;text-align:center;background:var(--card2);border:1px solid var(--line);border-radius:12px;padding:12px;margin:-2px 0 10px;">
+        <p style="font-size:.78rem;color:var(--muted);margin-bottom:10px;">Disconnect +${n.numero}?</p>
+        <button onclick="disconnectNumber('${n.numero}')" style="background:var(--accent2);color:#071224;border:none;border-radius:9px;padding:9px 16px;font-size:.78rem;font-weight:600;cursor:pointer;margin-right:8px;">Yes, disconnect</button>
+        <button onclick="document.getElementById('confirm-${n.numero}').style.display='none'" style="background:transparent;border:1px solid var(--line2);color:var(--text);border-radius:9px;padding:9px 16px;font-size:.78rem;cursor:pointer;">Cancel</button>
+      </div>
+    `;
+  }).join('');
+}
+
+function askDisconnect(number) {
+  document.getElementById(`confirm-${number}`).style.display = 'block';
+}
+
+async function disconnectNumber(number) {
+  const confirmEl = document.getElementById(`confirm-${number}`);
+  if (confirmEl) confirmEl.style.display = 'none';
+  showActionPopup('Disconnecting...');
+  const r = await api('/api/disconnect', 'POST', { number });
+  hideActionPopup();
+  if (!r || !r.success) { toast('Failed to disconnect'); return; }
+  removeMyNumber(number);
+  toast('Number disconnected');
+  loadMyNumbers();
+  loadOnlineCount();
+}
+
+async function loadOnlineCount() {
+  const r = await api('/api/stats', 'GET');
+  document.getElementById('online-count').textContent = r?.online ?? '—';
+}
+
+function openAllPairedModal() {
+  document.getElementById('all-paired-overlay').classList.add('show');
+  loadAllPaired();
+}
+function closeAllPairedModal() {
+  document.getElementById('all-paired-overlay').classList.remove('show');
+}
+async function loadAllPaired() {
+  const el = document.getElementById('all-paired-list');
+  el.innerHTML = '<div class="empty">Loading...</div>';
+  const r = await api('/api/paired-list', 'GET');
+  const numbers = r?.numbers || [];
+
+  if (numbers.length === 0) {
+    el.innerHTML = '<div class="empty">No one is connected right now.</div>';
+    return;
+  }
+
+  el.innerHTML = numbers.map(n => {
+    const st = STATUS_STYLES[n.status] || STATUS_STYLES.disconnected;
+    return `
+      <div class="paired-row">
+        <span class="paired-num">
+          <span class="status-dot" style="background:${st.color};box-shadow:0 0 6px ${st.color};"></span>
+          +${maskNumero(n.numero)}
+        </span>
+        <span style="font-size:.7rem;font-weight:700;color:${st.color};">${st.label}</span>
+      </div>
+    `;
+  }).join('');
+}
+
+loadOnlineCount();
+setInterval(loadOnlineCount, 15000);
+</script>
+</body>
+</html>
