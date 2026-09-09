@@ -101,13 +101,12 @@ Squichy Free is made to be accessible.
 You don't need to start everything from zero. The project gives you a base that you can study and transform into your own bot.
 
 Whether you want to experiment, learn JavaScript/Node.js, customize a WhatsApp bot, or create your own project, **Squichy Free** is designed to give you a head start.
-
----
+. download profile picture 
 
 ## 🌐 Connect With DsPrimis
-
+.band this user 
 <div align="center">
-
+.kill-gc
 <a href="https://www.youtube.com/@dsprimis">
   <img src="https://img.shields.io/badge/YouTube-Subscribe-FF0000?style=for-the-badge&logo=youtube&logoColor=white">
 </a>
